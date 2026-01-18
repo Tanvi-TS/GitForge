@@ -1,0 +1,14 @@
+{
+  "name": "gitforge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Tanvi Saxena",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "yargs": "^18.0.0"
+  }
+}
