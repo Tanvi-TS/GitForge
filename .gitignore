@@ -1,11 +1,12 @@
 # GitForge internal repository 
-Backend/.gitforge/
+.gitforge/
 
 # Local remote simulation
 gitforge-remote/
 
 # Test files
-Backend/demofile.txt
+demofile.txt
+newfile.txt
 
 # Node dependencies
 Backend/node_modules/
