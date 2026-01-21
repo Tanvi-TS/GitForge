@@ -1,0 +1,14 @@
+# GitForge internal repository 
+Backend/.gitforge/
+
+# Local remote simulation
+gitforge-remote/
+
+# Test files
+Backend/demofile.txt
+
+# Node dependencies
+Backend/node_modules/
+
+# Environment variables
+.env
