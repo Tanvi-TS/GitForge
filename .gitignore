@@ -7,6 +7,7 @@ gitforge-remote/
 # Test files
 demofile.txt
 newfile.txt
+thirdfile.txt
 
 # Node dependencies
 Backend/node_modules/
