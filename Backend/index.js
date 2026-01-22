@@ -1,3 +1,5 @@
+const dotenv = require("dotenv");
+
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
 
@@ -8,7 +10,13 @@ const { pushRepo } = require("./controllers/push");
 const { pullRepo } = require("./controllers/pull");
 const { revertRepo } = require("./controllers/revert");
 
+const app = require("./app");
+const connectDB = require("./db");
+
+dotenv.config();
+
 yargs(hideBin(process.argv))
+  .command("start", "Starts a new server", {}, startServer)
   .command("init", "Initialise a new repository", {}, initRepo)
   .command(
     "add <file>",
@@ -21,7 +29,7 @@ yargs(hideBin(process.argv))
     },
     (argv) => {
       addRepo(argv.file);
-    }
+    },
   )
   .command(
     "commit <message>",
@@ -34,7 +42,7 @@ yargs(hideBin(process.argv))
     },
     (argv) => {
       commitRepo(argv.message);
-    }
+    },
   )
   .command("push", "Push commits to gitforge-remote Repo", {}, pushRepo)
   .command("pull", "Pull commits from gitforge-remote Repo", {}, pullRepo)
@@ -49,7 +57,17 @@ yargs(hideBin(process.argv))
     },
     (argv) => {
       revertRepo(argv.commitID);
-    }
+    },
   )
   .demandCommand(1, "You need at least one command")
   .help().argv;
+
+function startServer() {
+  const port = process.env.PORT || 3000;
+
+  connectDB();
+
+  app.listen(port, () => {
+    console.log(`Server is running on PORT ${port}`);
+  });
+}

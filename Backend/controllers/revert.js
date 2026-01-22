@@ -11,6 +11,7 @@ async function revertRepo(commitId) {
     const files = await fs.readdir(commitDir);
 
     for (const file of files) {
+      if (file === "commit.json") continue;
       const src = path.join(commitDir, file);
       const dest = path.join(process.cwd(), file);
 
