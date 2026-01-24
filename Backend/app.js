@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/repos", repoRouter);
-app.use("/api", issueRouter);
+app.use("/api/repos", issueRouter);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "GitForge API is running" });

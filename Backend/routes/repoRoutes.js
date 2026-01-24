@@ -3,8 +3,11 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const { createRepository } = require("../controllers/repoController");
 const { getMyRepos } = require("../controllers/repoController");
 const checkRepoOwner = require("../middlewares/checkRepoOwner");
+const issueRouter = require("../routes/issueRoutes");
 
 const router = express.Router();
+
+router.use("/:repoId/issues", issueRouter);
 
 router.post("/create", authMiddleware, createRepository);
 router.get("/my", authMiddleware, getMyRepos);
@@ -17,8 +20,7 @@ router.get(
       message: "Repository access granted",
       repo: req.repo,
     });
-  }
+  },
 );
-
 
 module.exports = router;
