@@ -39,7 +39,7 @@ const createIssue = async (req, res) => {
   }
 };
 
-//All issue of a repo 
+//All issue of a repo
 
 const getRepoIssues = async (req, res) => {
   try {
@@ -72,7 +72,113 @@ const getRepoIssues = async (req, res) => {
   }
 };
 
+//Get Single Issue
+
+const getSingleIssue = async (req, res) => {
+  try {
+    const { repoId, issueId } = req.params;
+
+    const repo = await Repo.findById(repoId);
+    if (!repo) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Repository not found" });
+    }
+
+    if (repo.owner.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    const issue = await Issue.findOne({
+      _id: issueId,
+      repository: repoId,
+    }).populate("createdBy", "username");
+    if (!issue) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Issue not found" });
+    }
+
+    res.status(200).json({ success: true, data: issue });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+//Edit the issue 
+const updateIssue = async (req, res) => {
+  try {
+    const { repoId, issueId } = req.params;
+    const { title, description, status } = req.body;
+
+    const repo = await Repo.findById(repoId);
+    if (!repo) {
+      return res.status(404).json({ success: false, message: "Repository not found" });
+    }
+
+    if (repo.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    const issue = await Issue.findOne({ _id: issueId, repository: repoId });
+    if (!issue) {
+      return res.status(404).json({ success: false, message: "Issue not found" });
+    }
+
+    if (title !== undefined) issue.title = title;
+    if (description !== undefined) issue.description = description;
+    if (status !== undefined) issue.status = status;
+
+    await issue.save();
+
+    res.status(200).json({
+      success: true,
+      data: issue,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+//Delete the issue 
+const deleteIssue = async (req, res) => {
+  try {
+    const { repoId, issueId } = req.params;
+
+    const repo = await Repo.findById(repoId);
+    if (!repo) {
+      return res.status(404).json({ success: false, message: "Repository not found" });
+    }
+
+    if (repo.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    const issue = await Issue.findOne({ _id: issueId, repository: repoId });
+    if (!issue) {
+      return res.status(404).json({ success: false, message: "Issue not found" });
+    }
+
+    await issue.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Issue deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   createIssue,
   getRepoIssues,
+  getSingleIssue,
+  updateIssue,
+  deleteIssue
 };
