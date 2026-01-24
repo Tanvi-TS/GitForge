@@ -30,6 +30,6 @@ const repoSchema = new mongoose.Schema(
   }
 );
 
-repositorySchema.index({ name: 1, owner: 1 }, { unique: true });
+repoSchema.index({ name: 1, owner: 1 }, { unique: true });
 
 module.exports = mongoose.model("Repo", repoSchema);

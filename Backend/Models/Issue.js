@@ -21,7 +21,7 @@ const issueSchema = new mongoose.Schema(
 
     repository: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Repository",
+      ref: "Repo",
       required: true,
     },
 
