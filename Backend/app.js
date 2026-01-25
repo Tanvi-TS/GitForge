@@ -6,12 +6,14 @@ const authRouter = require("./routes/authRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
 const repoRouter = require("./routes/repoRoutes");
 const issueRouter = require("./routes/issueRoutes");
+const userRouter = require("./routes/userRoutes");
 
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/repos", repoRouter);
 app.use("/api/repos", issueRouter);
+app.use("/api/users", userRouter);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "GitForge API is running" });

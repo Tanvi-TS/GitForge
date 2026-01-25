@@ -1,6 +1,7 @@
 const Repo = require("../Models/Repo");
+const User = require("../Models/User");
 
-exports.createRepository = async (req, res) => {
+let createRepository = async (req, res) => {
   try {
     const { name, description, visibility } = req.body;
 
@@ -34,7 +35,7 @@ exports.createRepository = async (req, res) => {
   }
 };
 
-exports.getMyRepos = async (req, res) => {
+let getMyRepos = async (req, res) => {
   try {
     const repos = await Repo.find({ owner: req.user._id });
 
@@ -46,4 +47,39 @@ exports.getMyRepos = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+let getUserRepos = async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let repos;
+
+    if (req.user && req.user._id.toString() === user._id.toString()) {
+      repos = await Repo.find({ owner: user._id });
+    } else {
+      repos = await Repo.find({
+        owner: user._id,
+        visibility: "public",
+      });
+    }
+    res.status(200).json({
+      count: repos.length,
+      repositories: repos,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  createRepository,
+  getMyRepos,
+  getUserRepos,
 };

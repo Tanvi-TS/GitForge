@@ -1,13 +1,17 @@
 const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
-const { createRepository } = require("../controllers/repoController");
-const { getMyRepos } = require("../controllers/repoController");
+const {
+  createRepository,
+  getMyRepos,
+} = require("../controllers/repoController");
 const checkRepoOwner = require("../middlewares/checkRepoOwner");
 const issueRouter = require("../routes/issueRoutes");
+const commitRouter = require("../routes/commitRoutes");
 
 const router = express.Router();
 
 router.use("/:repoId/issues", issueRouter);
+router.use('/:repoId/commits', commitRouter);
 
 router.post("/create", authMiddleware, createRepository);
 router.get("/my", authMiddleware, getMyRepos);
@@ -22,5 +26,4 @@ router.get(
     });
   },
 );
-
 module.exports = router;
