@@ -1,8 +1,9 @@
 const Issue = require("../Models/Issue");
 const Repo = require("../Models/Repo");
+const CustomError = require("../utils/customError");
 
-//Issue Creation
-const createIssue = async (req, res) => {
+//CREATE ISSUE
+const createIssue = async (req, res, next) => {
   try {
     const { title, description } = req.body;
     const { repoId } = req.params;
@@ -10,16 +11,17 @@ const createIssue = async (req, res) => {
 
     const repo = await Repo.findById(repoId);
     if (!repo) {
-      return res.status(404).json({ message: "Repository not found" });
+      throw new CustomError("Repository not found", 404);
     }
 
     if (
       repo.visibility === "private" &&
       repo.owner.toString() !== userId.toString()
     ) {
-      return res
-        .status(403)
-        .json({ message: "Not allowed to create issue in this repo" });
+      throw new CustomError(
+        "Not allowed to create issue in this repository",
+        403,
+      );
     }
 
     const issue = await Issue.create({
@@ -30,102 +32,100 @@ const createIssue = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "Issue created successfully",
-      issue,
+      success: true,
+      data: issue,
     });
   } catch (error) {
-    console.error("Create issue error:", error);
-    res.status(500).json({ message: "Server error" });
+    next(error);
   }
 };
 
-//All issue of a repo
-
-const getRepoIssues = async (req, res) => {
+//GET ALL ISSUES OF A REPOSITORY
+const getRepoIssues = async (req, res, next) => {
   try {
     const { repoId } = req.params;
     const userId = req.user._id;
 
     const repo = await Repo.findById(repoId);
     if (!repo) {
-      return res.status(404).json({ message: "Repository not found" });
+      throw new CustomError("Repository not found", 404);
     }
 
     if (
       repo.visibility === "private" &&
       repo.owner.toString() !== userId.toString()
     ) {
-      return res.status(403).json({ message: "Access denied" });
+      throw new CustomError("Access denied", 403);
     }
 
     const issues = await Issue.find({ repository: repoId })
       .populate("createdBy", "username email")
       .populate("assignedTo", "username email");
 
-    res.json({
+    res.status(200).json({
+      success: true,
       count: issues.length,
-      issues,
+      data: issues,
     });
   } catch (error) {
-    console.error("Fetch issues error:", error);
-    res.status(500).json({ message: "Server error" });
+    next(error);
   }
 };
 
-//Get Single Issue
-
-const getSingleIssue = async (req, res) => {
+//GET SINGLE ISSUE
+const getSingleIssue = async (req, res, next) => {
   try {
     const { repoId, issueId } = req.params;
 
     const repo = await Repo.findById(repoId);
     if (!repo) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Repository not found" });
+      throw new CustomError("Repository not found", 404);
     }
 
     if (repo.owner.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Not authorized" });
+      throw new CustomError("Not authorized", 403);
     }
 
     const issue = await Issue.findOne({
       _id: issueId,
       repository: repoId,
     }).populate("createdBy", "username");
+
     if (!issue) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Issue not found" });
+      throw new CustomError("Issue not found", 404);
     }
 
-    res.status(200).json({ success: true, data: issue });
+    res.status(200).json({
+      success: true,
+      data: issue,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    next(error);
   }
 };
 
-//Edit the issue 
-const updateIssue = async (req, res) => {
+//UPDATE ISSUE
+const updateIssue = async (req, res, next) => {
   try {
     const { repoId, issueId } = req.params;
     const { title, description, status } = req.body;
 
     const repo = await Repo.findById(repoId);
     if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
+      throw new CustomError("Repository not found", 404);
     }
 
     if (repo.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized" });
+      throw new CustomError("Not authorized", 403);
     }
 
-    const issue = await Issue.findOne({ _id: issueId, repository: repoId });
+    const issue = await Issue.findOne({
+      _id: issueId,
+      repository: repoId,
+    });
+
     if (!issue) {
-      return res.status(404).json({ success: false, message: "Issue not found" });
+      throw new CustomError("Issue not found", 404);
     }
 
     if (title !== undefined) issue.title = title;
@@ -139,28 +139,31 @@ const updateIssue = async (req, res) => {
       data: issue,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    next(error);
   }
 };
 
-//Delete the issue 
-const deleteIssue = async (req, res) => {
+//DELETE ISSUE
+const deleteIssue = async (req, res, next) => {
   try {
     const { repoId, issueId } = req.params;
 
     const repo = await Repo.findById(repoId);
     if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
+      throw new CustomError("Repository not found", 404);
     }
 
     if (repo.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized" });
+      throw new CustomError("Not authorized", 403);
     }
 
-    const issue = await Issue.findOne({ _id: issueId, repository: repoId });
+    const issue = await Issue.findOne({
+      _id: issueId,
+      repository: repoId,
+    });
+
     if (!issue) {
-      return res.status(404).json({ success: false, message: "Issue not found" });
+      throw new CustomError("Issue not found", 404);
     }
 
     await issue.deleteOne();
@@ -170,8 +173,7 @@ const deleteIssue = async (req, res) => {
       message: "Issue deleted successfully",
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    next(error);
   }
 };
 
@@ -180,5 +182,5 @@ module.exports = {
   getRepoIssues,
   getSingleIssue,
   updateIssue,
-  deleteIssue
+  deleteIssue,
 };

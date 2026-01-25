@@ -1,13 +1,11 @@
 const Repo = require("../Models/Repo");
 const User = require("../Models/User");
+const CustomError = require("../utils/customError");
 
-let createRepository = async (req, res) => {
+//CREATE REPOSITORY
+const createRepository = async (req, res, next) => {
   try {
     const { name, description, visibility } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ message: "Repository name is required" });
-    }
 
     const existingRepo = await Repo.findOne({
       name,
@@ -15,7 +13,7 @@ let createRepository = async (req, res) => {
     });
 
     if (existingRepo) {
-      return res.status(400).json({ message: "Repository already exists" });
+      throw new CustomError("Repository already exists", 400);
     }
 
     const repo = await Repo.create({
@@ -26,36 +24,38 @@ let createRepository = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "Repository created successfully",
-      repository: repo,
+      success: true,
+      data: repo,
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    next(error);
   }
 };
 
-let getMyRepos = async (req, res) => {
+//GET MY REPOSITORIES
+const getMyRepos = async (req, res, next) => {
   try {
     const repos = await Repo.find({ owner: req.user._id });
 
-    res.json({
+    res.status(200).json({
+      success: true,
       count: repos.length,
-      repositories: repos,
+      data: repos,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    next(error);
   }
 };
 
-let getUserRepos = async (req, res) => {
+//GET USER REPOSITORIES
+const getUserRepos = async (req, res, next) => {
   try {
     const { username } = req.params;
 
     const user = await User.findOne({ username });
+
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      throw new CustomError("User not found", 404);
     }
 
     let repos;
@@ -68,13 +68,14 @@ let getUserRepos = async (req, res) => {
         visibility: "public",
       });
     }
+
     res.status(200).json({
+      success: true,
       count: repos.length,
-      repositories: repos,
+      data: repos,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    next(error);
   }
 };
 
