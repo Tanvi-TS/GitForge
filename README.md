@@ -1,4 +1,4 @@
-# 🚀 GitForge - Full Stack GitHub Clone
+# 🚀 GitForge - Full Stack Version Control Platform
 
 A lightweight, full-stack GitHub-inspired platform built with the **MERN Stack**. GitForge enables users to create repositories, manage issues, simulate Git operations through a custom CLI, and track commit history through a clean and professional dashboard.
 
